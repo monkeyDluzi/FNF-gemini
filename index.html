@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Friday Night Funkin' - MrBeast Mod</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for bold display styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Press+Start+2P&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0b0914;
+            color: #ffffff;
+            touch-action: manipulation;
+            user-select: none;
+           }
+        .fnf-font {
+            font-family: 'Fredoka One', cursive;
+            text-shadow: 3px 3px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+        }
+        .pixel-font {
+            font-family: 'Press Start 2P', monospace;
+        }
+        /* Custom glow effects for neon studio elements */
+        .glow-blue {
+            filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.8));
+        }
+        .glow-pink {
+            filter: drop-shadow(0 0 12px rgba(255, 0, 128, 0.8));
+        }
+        .glow-gold {
+          filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9));
+        }
+        /* Hide scrollbars completely */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        /* Responsive full-size canvas */
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+           }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col justify-center items-center bg-slate-950 overflow-hidden select-none">
+
+    <div id="appContainer" class="relative w-full h-full max-w-7xl max-h-[900px] aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-4 border-cyan-500/30 flex flex-col justify-center items-center">
+        <!-- Main Game Render Canvas -->
+        <canvas id="gameCanvas" width="1280" height="720" class="absolute inset-0 z-10"></canvas>
+
+        <!-- Dynamic On-screen Touch Controls Overlay (for mobile/tablets) -->
+        <div id="touchControls" class="absolute bottom-4 left-0 right-0 z-30 flex justify-between px-6 pointer-events-none hidden sm:hidden md:flex lg:hidden">
+            <!-- BF Notes Left Side / Mobile Control Zone -->
+            <div class="flex gap-3 pointer-events-auto">
+                <button id="btnLeft" class="w-16 h-16 bg-purple-600/80 active:bg-purple-400 border-2 border-white rounded-2xl flex items-center justify-center text-3xl font-bold shadow-lg text-white">←</button>
+                <button id="btnDown" class="w-16 h-16 bg-cyan-600/80 active:bg-cyan-400 border-2 border-white rounded-2xl flex items-center justify-center text-3xl font-bold shadow-lg text-white">↓</button>
+            </div>
+            <div class="flex gap-3 pointer-events-auto">
+                <button id="btnUp" class="w-16 h-16 bg-green-600/80 active:bg-green-400 border-2 border-white rounded-2xl flex items-center justify-center text-3xl font-bold shadow-lg text-white">↑</button>
+                <button id="btnRight" class="w-16 h-16 bg-red-600/80 active:bg-red-400 border-2 
+                border-white rounded-2xl flex items-center justify-center text-3xl font-bold shadow-lg text-white">→</button>
+            </div>
+        </div>
+
+        <!-- Start / Main Menu Overlay Screen -->
+        <div id="menuOverlay" class="absolute inset-0 z-40 bg-gradient-to-br from-blue-950/90 via-purple-950/95 to-slate-950/95 flex flex-col items-center justify-between p-8 backdrop-blur-sm">
+            <!-- Header Title -->
+            <div class="text-center mt-4 transform hover:scale-105 transition duration-300">
+                <h1 class="text-5xl md:text-7xl fnf-font text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400 tracking-wider glow-gold">
+                    FRIDAY NIGHT FUNKIN'
+                </h1>
+              <h2 class="text-3xl md:text-5xl fnf-font text-yellow-300 mt-2 tracking-widest uppercase glow-pink">
+                    ★ VS MRBEAST MOD ★
+                </h2>
+                <p class="text-cyan-200 text-sm md:text-base mt-2 font-bold tracking-wide">"CAN YOU BEAT ME FOR $10,000,000?!"</p>
+            </div>
+
+            <!-- Song Selector & Difficulty Selection Cards -->
+            <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 my-auto">
+                <!-- Song 1 -->
+                <div class="song-card cursor-pointer bg-slate-900/80 hover:bg-cyan-900/50 border-4 border-cyan-400 rounded-2xl p-5 flex flex-col justify-between transform transition duration-200 hover:-translate-y-2 hover:shadow-cyan-500/50 shadow-xl group" data-song="0">
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-widest text-cyan-400">Track 01</span>
+                        <h3 class="text-2xl font-bold text-white group-hover:text-cyan-300 mt-1">Attack of the Beast</h3>
+                        <p class="text-xs text-slate-300 mt-2">Upbeat energetic synth tempo with fast syncopated beats.</p>
+                      div class="mt-4 flex justify-between items-center text-xs font-bold text-cyan-300">
+                        <span>BPM: 135</span>
+                        <span class="bg-cyan-950 border border-cyan-400 px-2 py-1 rounded">Normal</span>
+                    </div>
+                </div>
+
+                <!-- Song 2 -->
+                <div class="song-card cursor-pointer bg-slate-900/80 hover:bg-pink-900/50 border-4 border-slate-700 hover:border-pink-500 rounded-2xl p-5 flex flex-col justify-between transform transition duration-200 hover:-translate-y-2 hover:shadow-pink-500/50 shadow-xl group" data-song="1">
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-widest text-pink-400">Track 02</span>
+                        <h3 class="text-2xl font-bold text-white group-hover:text-pink-300 mt-1">Feastables Funk</h3>
+                        <p class="text-xs text-slate-300 mt-2">Funky bass groove featuring chocolate bar throw solos.</p>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center text-xs font-bold text-pink-300">
+                        <span>BPM: 145</span>
+                        <span class="bg-pink-950 border border-pink-400 px-2 py-1 rounded">Hard</span>
+                    </div>
+                </div>
+
+                <!-- Song 3 -->
+                <div class="song-card cursor-pointer bg-slate-900/80 hover:bg-yellow-900/50 border-4 border-slate-700 hover:border-yellow-400 rounded-2xl p-5 flex flex-col justify-between transform transition duration-200 hover:-translate-y-2 hover:shadow-yellow-500/50 shadow-xl group" data-song="2">
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-widest text-yellow-400">Track 03</span>
+                        <h3 class="text-2xl font-bold text-white group-hover:text-yellow-300 mt-1">$10,000,000 Challenge</h3>
+                        <p class="text-xs text-slate-300 mt-2">Ultra high-speed rap battle with extreme note density!</p>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center text-xs font-bold text-yellow-300">
+                        <span>BPM: 165</span>
+                        <span class="bg-yellow-950 border border-yellow-400 px-2 py-1 rounded">BEAST MODE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Control / Settings Panel -->
+            <div class="w-full max-w-4xl bg-slate-900/90 border-2 border-slate-700 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 text-xs md:text-sm">
+                <!-- Scroll Speed Selector -->
+                <div class="flex items-center gap-3">
+                    <span class="font-bold text-slate-300">Scroll Speed:</span>
+                    <button id="speedBtn" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold px-3 py-1.5 rounded-lg border border-slate-600 transition">
+                        1.5x (Default)
+                    </button>
+                </div>
+<!-- Controls Guide -->
+                <div class="flex items-center gap-4 text-slate-300">
+                    <span>Keys: <strong class="text-yellow-400">WASD</strong> or <strong class="text-yellow-400">Arrow Keys</strong></span>
+                    <span>Pause: <strong class="text-yellow-400">P / ESC</strong></span>
+                </div>
+
+                <!-- Play Button -->
+                <button id="startPlayBtn" class="bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 hover:from-yellow-300 hover:to-cyan-300 text-slate-950 font-black text-lg px-8 py-2.5 rounded-xl shadow-lg transform active:scale-95 transition">
+                    START GAME ▶
+                </button>
+            </div>
+        </div>
+
+        <!-- Pause Menu Overlay Screen -->
+        <div id="pauseOverlay" class="absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-6 hidden">
+            <h2 class="text-5xl fnf-font
+              ext-yellow-400 mb-6 glow-gold">GAME PAUSED</h2>
+            <div class="flex flex-col gap-4 w-64">
+                <button id="resumeBtn" class="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 rounded-xl text-lg shadow-lg">Resume</button>
+                <button id="restartBtn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 rounded-xl text-lg shadow-lg">Restart Song</button>
+                <button id="quitBtn" class="bg-red-500 hover:bg-red-400 text-white font-bold py-3 rounded-xl text-lg shadow-lg">Exit to Song Select</button>
+            </div>
+        </div>
+
+        <!-- Victory Banner Overlay -->
+        <div id="victoryOverlay" class="absolute inset-0 z-40 bg-gradient-to-b from-yellow-500/90 via-pink-600/90 to-purple-900/95 flex flex-col items-center justify-center p-8 hidden">
+            <div class="text-center animate-bounce">
+                <h2 class="text-4xl md:text-6xl fnf-font text-yellow-300 glow-gold">★ YOU WON $10,000,000! ★</h2>
+                <p class="text-white text-xl md:text-2xl font-bold mt-2">You defeated MrBeast in a Rhythm Battle!</p>
+            </div>
+            <!-- Stats Box -->
+            <div class="bg-slate-900/90 border-4 border-yellow-400 rounded-2xl p-6 my-6 w-full max-w-md text-center shadow-2xl">
+                <div class="text-6xl font-black text-cyan-400 mb-2" id="victoryRank">RANK: S</div>
+                <div class="grid grid-cols-2 gap-4 text-left text-sm md:text-base border-t border-slate-700 pt-4">
+                    <div>Score: <strong id="vicScore" class="text-yellow-400">000000</strong></div>
+                    <div>Accuracy: <strong id="vicAccuracy" class="text-green-400">100%</strong></div>
+                    <div>Max Combo: <strong id="vicCombo" class="text-pink-400">0</strong></div>
+                    <div>Total Misses: <strong id="vicMisses" class="text-red-400">0</strong></div>
+                </div>
+            </div>
+
+            <button id="victoryContinueBtn" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-xl px-10 py-3 rounded-2xl shadow-2xl transform hover:scale-105 transition">
+                CONTINUE ▶
+            </button>
+        </div>
+ </div>
+
+    <script>
+        /* ===================================================================
+           FNF MRBEAST RHYTHM ENGINE (100% Native Web Audio + JS Canvas)
+           =================================================================== */
+
+        // --- GAME AUDIO SYNTH ENGINE (Web Audio API) ---
+        class SynthEngine {
+            constructor() {
+                this.ctx = null;
+                this.masterGain = null;
+                this.initialized = false;
+            }
+ init() {
+                if (this.initialized) return;
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.setValueAtTime(0.7, this.ctx.currentTime);
+                this.maserGain.connect(this.ctx.destination);
+                this.initialized = true;
+            }
+
+            // Play synth voice sound for Boyfriend (High pitched energetic chip vocoder sound)
+            playBFNote(dir) {
+                if (!this.initialized) return;
+                const frequencies = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+                const freq = frequencies[dir] || 300;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                // Pitch bend up slightly on note attack
+                osc.frequency.exponentialRampToValueAtTime(freq * 1.1, this.ctx.currentTime + 0.1);filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(1200, this.ctx.currentTime);
+                filter.Q.setValueAtTime(3, this.ctx.currentTime);
+
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.masterGain);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }
+
+            // Play synth voice sound for MrBeast (Deep energetic punchy formant sound)
+            playBeastNote(dir) {
+                if (!this.initialized) return;
+                const frequencies = [130.81, 164.81, 196.00, 261.63]; // C3, E3, G3, C4
+                const freq = frequencies[dir] || 150;const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.22);
+osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.masterGain);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.25);
+            }
+
+            // Play background synth drum snare / kick tick
+            playBeatDrum(isKick) {
+                if (!this.initialized) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                if (isKick) {
+                    osc.type = 'sine'
+                    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+                } else {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(250, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+                }
+
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start();osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            // Play miss error tone
+            playMissSound() {
+                if (!this.initialized) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(90, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }}
+
+        const SONGS = [
+            {
+                name: "Attack of the Beast",
+                bpm: 135,
+                scrollSpeed: 1.5,
+                // Procedural note generator for dynamic charts
+                generateChart: function() {
+                    const notes = [];
+                    const beatDuration = 60 / this.bpm;
+                    const totalBeats = 160;
+
+                    for (let b = 4; b < totalBeats; b += 0.5) {
+                        const time = b * beatDuration;
+                        // Alternate sections between Beast (Opponent) and BF (Player)
+                        const isPlayer = Math.floor(b / 8) % 2 === 1;
+                        const lane = Math.floor((Math.sin(b * 3.7) + 1) * 2) % 4;
+// Create dual turns on intense sections
+                        if (b > 64 && b % 4 === 0) {
+                            notes.push({ time, lane: (lane + 1) % 4, isPlayer: !isPlayer, hit: false, missed: false });
+                        }
+                        notes.push({ time, lane, isPlayer, hit: false, missed: false });
+                    }
+                    return notes;
+                }
+            },
+            {
+                name: "Feastables Funk",
+                bpm: 145,
+                scrollSpeed: 1.8,
+                generateChart: function() {
+                    const notes = [];
+                    const beatDuration = 60 / this.bpm;
+                    const totalBeats = 180;
+
+                    for (let b = 4; b < totalBeats; b += 0.25) {
+                        // Create rhythmic syncopated patterns
+                  if (Math.sin(b * 5.1) > -0.2) {
+                            const time = b * beatDuration;
+                            const isPlayer = Math.floor(b / 4) % 2 === 1;
+                            const lane = Math.floor((b * 2) % 4);
+                            notes.push({ time, lane, isPlayer, hit: false, missed: false });
+                        }
+                    }
+                    return notes;
+                }
+            },
+            {
+                name: "$10,000,000 Challenge",
+                bpm: 165,
+                scrollSpeed: 2.2,
+                generateChart: function() {
+                    const notes = [];
+                    const beatDuration = 60 / this.bpm;
+                    const totalBeats = 220;
+                  for (let b = 4; b < totalBeats; b += 0.25) {
+                        const time = b * beatDuration;
+                        const isPlayer = Math.floor(b / 4) % 2 === 1;
+                        const lane = Math.floor(Math.abs(Math.cos(b * 2.3)) * 4) % 4;
+                        notes.push({ time, lane, isPlayer, hit: false, missed: false });
+                    }
+                    return notes;
+                }
+            }
+        ];
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const synth = new SynthEngine();
+// Game state parameters
+        let currentSongIndex = 0;
+        let selectedScrollSpeed = 1.5;
+        let isPlaying = false;
+        let isPaused = false;
+        let songTime = 0;
+        let lastTimestamp = 0;
+        let songNotes = [];
+
+        // Gameplay Metrics
+        let health = 50; // 0 = Lose, 100 = Max Win
+        let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let hitsCount = 0;
+        let totalNotesCount = 0;
+        let missesCount = 0;
+
+        // Visual Rating Popups Queue
+        let ratingsQueue = [];
+       // Dynamic Camera Zoom Effect
+        let cameraZoom = 1.0;
+        let beatPulse = 0;
+
+        // Character Pose Timers (0: Idle, 1: Left, 2: Down, 3: Up, 4: Right, 5: Miss)
+        let bfPose = 0;
+        let bfPoseTimer = 0;
+        let beastPose = 0;
+        let beastPoseTimer = 0;
+
+        // Arrow Lane Configuration
+        const ARROW_COLORS = ['#c24b99', '#00ffff', '#00ff66', '#f9393f']; // Purple, Cyan, Green, Red
+        const ARROW_SYMBOLS = ['←', '↓', '↑', '→'];
+        const KEY_MAPPINGS = {
+            'ArrowLeft': 0, 'KeyA': 0,
+            'ArrowDown': 1, 'KeyS': 1,
+            'ArrowUp': 2, 'KeyW': 2,
+            'ArrowRight': 3, 'KeyD': 3
+          };
+
+        // Key Press State Tracker
+        const keyState = [false, false, false, false];
+
+
+        // Money particle system for stage visual effects
+        const moneyParticles = [];
+        for (let i = 0; i < 35; i++) {
+            moneyParticles.push({
+                x: Math.random() * 1280,
+                y: Math.random() * 720,
+                speed: 1 + Math.random() * 2.5,
+                rotation: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.05,
+                scale: 0.6 + Math.random() * 0.6
+            });
+        }
+
+        // Render money particles falling in background
+      function updateAndDrawParticles() {
+            ctx.fillStyle = '#85bb65';
+            moneyParticles.forEach(p => {
+                p.y += p.speed;
+                p.rotation += p.rotSpeed;
+                if (p.y > 740) {
+                    p.y = -20;
+                    p.x = Math.random() * 1280;
+                }
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.scale(p.scale, p.scale);
+                // Draw Dollar Bill SVG/Shape
+                ctx.fillStyle = '#2e7d32';
+                ctx.fillRect(-15, -8, 30, 16);
+                ctx.fillStyle = '#81c784';
+                ctx.fillRect(-13, -6, 26, 12);
+                ctx.fillStyle = '#2e7d32';
+                ctx.font = '900 10px sans-srif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('$', 0, 0);
+                ctx.restore();
+            });
+        }
+
+        // Draw Stage Environment (MrBeast Neon Studio & Sound Speakers)
+        function drawStageBackground() {
+            // Dark gradient floor & back wall
+      const bgGradient = ctx.createLinearGradient(0, 0, 0, 720);
+            bgGradient.addColorStop(0, '#090514');
+            bgGradient.addColorStop(0.6, '#180e2e');
+            bgGradient.addColorStop(1, '#05020a');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, 1280, 720);
+
+            // Studio Spotlight Beams
+            ctx.save();
+            ctx.globalAlpha = 0.15 + beatPulse * 0.1;
+            const spot1 = ctx.createRadialGradient(250, 0, 10, 250, 0, 600);
+            spot1.addColorStop(0, '#00ffff');
+            spot1.addColorStop(1, 'transparent');
+            ctx.fillStyle = spot1;
+            ctx.beginPath(); ctx.moveTo(250, 0); ctx.lineTo(50, 720); ctx.lineTo(450, 720); ctx.closePath(); ctx.fill();
+
+            const spot2 = ctx.createRadialGradient(1030, 0, 10, 1030, 0, 600);
+            spot2.addColorStop(0, '#ff007f');
+          spot2.addColorStop(1, 'transparent');
+            ctx.fillStyle = spot2;
+            ctx.beginPath(); ctx.moveTo(1030, 0); ctx.lineTo(830, 720); ctx.lineTo(1230, 720); ctx.closePath(); ctx.fill();
+            ctx.restore();
+
+            // Animated falling dollar bills
+            updateAndDrawParticles();
+
+            // Large Animated MRBEAST Neon Banner
+            ctx.save();
+            ctx.shadowBlur = 20 + beatPulse * 15;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 48px "Fredoka One", cursive';
+            ctx.textAlign = 'center';
+            ctx.fillText('MRBEAST STUDIO', 640, 90);
+            ctx.restore();
+
+            // Pulsing Speakers on Stage
+            const speakerScale = 1 + beatPulse * 0.08;
+          drawSpeaker(140, 420, speakerScale);
+            drawSpeaker(1140, 420, speakerScale);
+
+            // Stage Floor
+            ctx.fillStyle = '#110b21';
+            ctx.fillRect(0, 520, 1280, 200);
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(0, 520); ctx.lineTo(1280, 520); ctx.stroke();
+        }
+
+        // Draw Stage Speaker
+        function drawSpeaker(x, y, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+            ctx.fillStyle = '#1e1b2e';
+            ctx.strokeStyle = '#3b3558';
+            ctx.lineWidth = 6;
+            ctx.fillRect(-60, -100, 120, 200);
+          ctx.strokeRect(-60, -100, 120, 200);
+
+            // Speaker Cones
+            ctx.fillStyle = '#0f0d17';
+            ctx.beginPath(); ctx.arc(0, -45, 35, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 45, 40, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = '#00ffff';
+            ctx.beginPath(); ctx.arc(0, -45, 12, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(0, 45, 15, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        }
+
+
+        // Render Boyfriend (BF) Canvas Vector Character
+        function drawBoyfriend(x, y, pose) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Dynamic pose offsets
+            let offX = 0, offY = 0;
+            if (pose === 1) offX = -20;
+          / Left
+            if (pose === 2) offY = 20;  // Down
+            if (pose === 3) offY = -20; // Up
+            if (pose === 4) offX = 20;  // Right
+            if (pose === 5) offY = 10;  // Miss
+
+            ctx.translate(offX, offY);
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(0, 0, 55, 15, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Legs / Red Shoes
+            ctx.fillStyle = '#e63946';
+            ctx.beginPath(); ctx.ellipse(-25, -10, 22, 12, 0, 0, Math.PI * 2); ctx.fill(); // Left Shoe
+            ctx.beginPath(); ctx.ellipse(25, -10, 22, 12, 0, 0, Math.PI * 2); ctx.fill();  // Right Shoe
+
+            // Baggy Blue Jeans
+            ctx.fillStyle = '#1d3557';
+            ctx.fillRect(-30, -50, 25, 42);
+          ctx.fillRect(5, -50, 25, 42);
+
+            // White T-Shirt with Forbidden Red Symbol
+            ctx.fillStyle = '#f1faee';
+            ctx.fillRect(-28, -100, 56, 55);
+            ctx.fillStyle = '#e63946';
+            ctx.beginPath(); ctx.arc(0, -75, 12, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#f1faee';
+            ctx.beginPath(); ctx.arc(0, -75, 8, 0, Math.PI * 2); ctx.fill();
+
+            // Head / Skin
+            ctx.fillStyle = '#ffdbac';
+            ctx.beginPath(); ctx.arc(0, -125, 30, 0, Math.PI * 2); ctx.fill();
+
+            // Cyan Hair
+            ctx.fillStyle = '#00f5d4';
+            ctx.beginPath(); ctx.arc(-8, -145, 28, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(15, -142, 22, 0, Math.PI * 2); ctx.fill();
+
+            // Red Backward Cap
+            ctx.fillStyle = '#e63946';
+          ctx.beginPath(); ctx.arc(0, -135, 32, Math.PI, Math.PI * 2); ctx.fill();
+            ctx.fillRect(15, -140, 35, 10); // Cap brim
+
+            // Eyes / Face Expressions
+            if (pose === 5) { // Miss face
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(-15, -130); ctx.lineTo(-5, -120); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(5, -130); ctx.lineTo(15, -120); ctx.stroke();
+            } else {
+                ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.arc(-10, -125, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(10, -125, 4, 0, Math.PI * 2); ctx.fill();
+            }
+
+            // Microphone in Hand
+            ctx.fillStyle = '#4a4e69';
+            ctx.fillRect(25, -85, 10, 25);
+            ctx.fillStyle = '#9a8c98';
+            ctx.beginPath(); ctx.arc(30, -90, 10, 0, Math.PI * 2); ctx.fill();
+
+            ctx.restore();
+           }
+
+        // Render MrBeast Canvas Vector Character
+        function drawMrBeast(x, y, pose) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            let offX = 0, offY = 0;
+            if (pose === 1) offX = -25; // Left
+            if (pose === 2) offY = 20;  // Down
+            if (pose === 3) offY = -25; // Up
+            if (pose === 4) offX = 25;  // Right
+      ctx.translate(offX, offY);
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(0, 0, 65, 18, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Black Sneakers
+            ctx.fillStyle = '#111111';
+            ctx.beginPath(); ctx.ellipse(-30, -10, 26, 14, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(30, -10, 26, 14, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Dark Pants
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(-35, -70, 30, 62);
+            ctx.fillRect(5, -70, 30, 62);
+
+            // Signature Blue MrBeast Hoodie / Panther Logo
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(-42, -130, 84, 65);
+
+            // MrBeast Panther Head Outline on Hoodie
+      ctx.fillStyle = '#38bdf8';
+            ctx.beginPath(); ctx.arc(0, -100, 16, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#e11d48'; // Lightning strike on panther logo
+            ctx.beginPath(); ctx.moveTo(-2, -110); ctx.lineTo(-8, -100); ctx.lineTo(2, -100); ctx.lineTo(-2, -90); ctx.closePath(); ctx.fill();
+
+            // Head / Skin
+            ctx.fillStyle = '#fdd7b7';
+            ctx.beginPath(); ctx.arc(0, -160, 34, 0, Math.PI * 2); ctx.fill();
+
+            // Brown Hair & Beard
+            ctx.fillStyle = '#543d2b';
+            ctx.beginPath(); ctx.arc(0, -175, 34, Math.PI, Math.PI * 2); ctx.fill(); // Hair
+            ctx.beginPath(); ctx.arc(0, -150, 35, 0.2, Math.PI - 0.2); ctx.fill(); // Stubble / Beard
+
+            // Iconic Wide Excited Smile Face
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.ellipse(0, -152, 16, 10, 0, 0, Math.PI); ctx.fill();
+            ctx.strokeStyle = '#000000'; ctx.lineWidth = 2; ctx.stroke();
+
+            // Eyes
+      ctx.fillStyle = '#000000';
+            ctx.beginPath(); ctx.arc(-12, -165, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(12, -165, 4, 0, Math.PI * 2); ctx.fill();
+
+            // Pose Special Items (Feastables Bar or Money Stacks)
+            if (pose === 3) {
+                // Holding Cash Stacks Up High
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(-70, -210, 40, 25);
+                ctx.fillRect(30, -210, 40, 25);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText('$100', -60, -193);
+                ctx.fillText('$100', 40, -193);
+            } else if (pose === 2) {
+                // Feastables Chocolate Bar Throw Pose
+                ctx.fillStyle = '#451a03';
+                ctx.fillRect(-65, -110, 28, 45);
+              }
+
+            ctx.restore();
+        }
+
+
+        // Render Rhythm Scroll Lanes & Notes
+        function drawRhythmEngine() {
+            const laneXOpponent = 160;
+            const laneXPlayer = 820;
+            const receptorY = 120; // Receptors at top of screen
+
+            // Draw Opponent Receptors (MrBeast)
+            drawReceptors(laneXOpponent, receptorY, false);
+            // Draw Player Receptors (BF)
+      drawReceptors(laneXPlayer, receptorY, true);
+
+            // Draw Scrolling Notes
+            const currentSec = songTime;
+            const scrollSpeedMultiplier = selectedScrollSpeed * 450; // Pixels per second
+
+            songNotes.forEach(note => {
+                if (note.hit || note.missed) return;
+
+                const timeDiff = note.time - currentSec;
+                const noteY = receptorY + timeDiff * scrollSpeedMultiplier;
+
+                // Render note if within canvas viewport
+                if (noteY > -50 && noteY < 750) {
+                    const baseX = note.isPlayer ? laneXPlayer : laneXOpponent;
+                    const noteX = baseX + note.lane * 70;
+
+                    drawArrowNote(noteX, noteY, note.lane, note.isPlayer);
+                }
+
+                // Opponent Auto-Hit Logic
+                               if (!note.isPlayer && note.time <= currentSec && !note.hit) {
+                    note.hit = true;
+                    synth.playBeastNote(note.lane);
+                    beastPose = note.lane + 1;
+                    beastPoseTimer = 0.18;
+                }
+
+                // Player Miss Logic
+                if (note.isPlayer && note.time < currentSec - 0.16 && !note.missed) {
+                    note.missed = true;
+                    combo = 0;
+                    missesCount++;
+                    health = Math.max(0, health - 8);
+                    synth.playMissSound();
+                    bfPose = 5; // Miss pose
+                    bfPoseTimer = 0.25;
+                    addRatingPopup("MISS!", "#ef4444");
+                }
+            });
+
+            // Draw Rating Popups
+      drawRatings();
+
+            // Draw Dynamic Health Bar
+            drawHealthBar();
+        }
+
+        // Draw Lane Receptors
+        function drawReceptors(baseX, receptorY, isPlayer) {
+            for (let i = 0; i < 4; i++) {
+                const x = baseX + i * 70;
+                const isPressed = isPlayer && keyState[i];
+
+                ctx.save();
+                ctx.translate(x, receptorY);
+                if (isPressed) ctx.scale(0.9, 0.9);
+              ctx.fillStyle = isPressed ? ARROW_COLORS[i] : 'rgba(15, 23, 42, 0.7)';
+                ctx.strokeStyle = ARROW_COLORS[i];
+                ctx.lineWidth = 4;
+
+                ctx.beginPath();
+                ctx.roundRect(-28, -28, 56, 56, 12);
+                ctx.fill();
+                ctx.stroke();
+
+                // Arrow Symbol
+                ctx.fillStyle = isPressed ? '#ffffff' : ARROW_COLORS[i];
+                ctx.font = '900 28px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(ARROW_SYMBOLS[i], 0, 0);
+
+                ctx.restore();
+            }
+        }
+
+        // Draw Individual Arrow Note
+        function drawArrowNote(x, y, lane, isPlayer) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            ctx.fillStyle = ARROW_COLORS[lane];
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = ARROW_COLORS[lane];
+
+            ctx.beginPath();
+            ctx.roundRect(-26, -26, 52, 52, 10);
+            ctx.fill();
+
+            // Inner Arrow Icon
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 26px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(ARROW_SYMBOLS[lane], 0, 0);
+          
+            ctx.restore();
+        }
+
+
+        // Draw Dynamic FNF Health Bar with Character Head Icons
+        function drawHealthBar() {
+            const barX = 390;
+            const barY = 660;
+            const barWidth = 500;
+            const barHeight = 20;
+          // Background Frame
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(barX - 4, barY - 4, barWidth + 8, barHeight + 8);
+
+            // Beast Side (Red/Pink) vs BF Side (Cyan)
+            const bfWidth = (health / 100) * barWidth;
+
+            ctx.fillStyle = '#ff0055'; // Beast color
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+
+            ctx.fillStyle = '#00ffff'; // BF color
+            ctx.fillRect(barX + (barWidth - bfWidth), barY, bfWidth, barHeight);
+
+            // Icon Head Positions (Shifts along the health bar)
+            const headX = barX + (barWidth - bfWidth);
+
+            // Draw Beast Head Icon
+            ctx.save();
+            ctx.translate(headX - 25, barY + 10);
